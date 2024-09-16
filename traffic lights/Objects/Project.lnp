@@ -1,0 +1,6 @@
+".\Objects\main.obj",
+".\Objects\TIM_set.obj",
+".\Objects\Delayms.obj",
+".\Objects\IAP.obj" 
+TO ".\Objects\Project" 
+PRINT(".\Listings\Project.m51") RAMSIZE(256) 

@@ -1,0 +1,44 @@
+C51 COMPILER V9.59.0.0   TIM_INTERRUPT                                                     06/01/2024 10:02:31 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE TIM_INTERRUPT
+OBJECT MODULE PLACED IN .\Objects\TIM_interrupt.obj
+COMPILER INVOKED BY: D:\KEIL\C51\BIN\C51.EXE TIM_interrupt.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\TIM_interrupt.lst) TABS(2) OBJECT(.\Objects\TIM_interrupt.obj)
+
+line level    source
+
+   1          #include <STC12C5A60S2.H>
+   2          #define uchar unsigned char 
+   3          #define uint unsigned int
+   4          /**
+   5             * @brief 定时器0设置，50ms进一次中断
+   6             * @param 无
+   7             * @retval 无
+   8             */
+   9          void Timer0_Init(void)  //50毫秒@11.0592MHz
+  10          {
+  11   1        TMOD &= 0xF0;     
+  12   1        TMOD |= 0x01;     //设置定时器模式
+  13   1        TL0 = 0x00;       //设置定时初始值
+  14   1        TH0 = 0x4C;       //设置定时初始值
+  15   1        TF0 = 0;        //清除TF0标志
+  16   1        TR0 = 1;        //定时器0开始计时
+  17   1        ET0=1;
+  18   1      }
+  19          
+  20          void t0_int() interrupt 1//此定时器同时作为按键消抖和倒计时
+  21          {
+  22   1        TL0 = 0x00;       
+  23   1        TH0 = 0x4C;
+  24   1        if(++count_t0==20)
+*** ERROR C202 IN LINE 24 OF TIM_interrupt.c: 'count_t0': undefined identifier
+  25   1        {
+  26   2          count_t0=0;
+*** ERROR C202 IN LINE 26 OF TIM_interrupt.c: 'count_t0': undefined identifier
+  27   2          time_1--;
+*** ERROR C202 IN LINE 27 OF TIM_interrupt.c: 'time_1': undefined identifier
+  28   2        }
+  29   1      }
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  3 ERROR(S)
