@@ -1,0 +1,116 @@
+C51 COMPILER V9.59.0.0   MAIN                                                              05/30/2024 22:09:52 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\KEIL\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main.ls
+                    -t) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          /**
+   2             * @brief 算术平均法
+   3             * @param
+   4             * @retval
+   5             */
+   6          #include <STC12C5A60S2.H>
+   7          #include "intrins.h"
+   8          #define uchar unsigned char
+   9          #define uint  unsigned int
+  10          uint dis_voltage;//数码管显示电压
+  11          uchar code num_disp_L[]={0xc0,0xf9,0xa4,0xb0,0x99,
+  12                                   0x92,0x82,0xf8,0x80,0x90};//无小数点，与上0x7F加小数点
+  13          uchar num[4]={0,0,0,0};
+  14          uchar code wei[4]={0xf7,0xfb,0xfd,0xfe};//位选
+  15          void Delayms(int ms);
+  16          void ADC_init();
+  17          float ADC_Value(uchar Channel);//算术平均法，采样10次
+  18          uint ADC_Get(uchar Channel);
+  19          void dis_choose();
+  20          void main()
+  21          {
+  22   1        uchar i;
+  23   1        ADC_init();
+  24   1        while(1)
+  25   1        {
+  26   2            dis_voltage=ADC_Value(0)*1000;
+  27   2            dis_choose();
+  28   2            for(i=0;i<4;i++)
+  29   2            {//数码管动态显示,最高位有小数点
+  30   3              if(i==3)//最高位加小数点
+  31   3                P0=num_disp_L[num[i]]&0x7F;
+  32   3              else
+  33   3                P0=num_disp_L[num[i]];
+  34   3              P2=wei[i];
+  35   3              Delayms(2);
+  36   3            } 
+  37   2        }
+  38   1      }
+  39          void Delayms(int ms)    //@11.0592MHz
+  40          {
+  41   1        unsigned char data i, j;
+  42   1        while(ms--)
+  43   1        {
+  44   2          i = 11;
+  45   2          j = 190;
+  46   2          do
+  47   2          {
+  48   3            while (--j);
+  49   3          } while (--i);
+  50   2        }
+  51   1      }
+  52          void ADC_init()
+  53          {
+  54   1        ADC_RES=0;
+C51 COMPILER V9.59.0.0   MAIN                                                              05/30/2024 22:09:52 PAGE 2   
+
+  55   1        ADC_RESL=0;
+  56   1        P1ASF=0x01;//P10作模拟输入 
+  57   1        AUXR1=0x00;//ADRJ=0,高8位存ADC_RES,低2位ADC_RESL低2位
+  58   1        ADC_CONTR=0x80;//打开ADC电源
+  59   1        Delayms(2);
+  60   1      }
+  61          
+  62          float ADC_Value(uchar Channel)
+  63          {
+  64   1        float AD_Value;
+  65   1        uchar i;
+  66   1        for(i=0;i<10;i++) //采样10次取平均值
+  67   1        AD_Value+=ADC_Get(Channel); 
+  68   1        AD_Value/=10;
+  69   1        AD_Value=(AD_Value*5.11)/1024.0;//ADRJ=0，取10位转换结果ADC_RES+ADC_RESL=1024*Vin/Vcc
+  70   1        return AD_Value;
+  71   1      }
+  72          
+  73          
+  74          
+  75          uint ADC_Get(uchar Channel)
+  76          {
+  77   1        ADC_CONTR=0x88|Channel;//打开ADC电源,启动ADC,选择P10作模拟输入通道
+  78   1        _nop_(); _nop_(); _nop_(); _nop_();
+  79   1        while(!(ADC_CONTR&0x10));    //等待转换完成
+  80   1        ADC_CONTR&=0xe7;      //关闭AD转换，ADC_FLAG清0
+  81   1        return(ADC_RES*4+ADC_RESL);   //返回AD转换完成的10位数据
+  82   1      }
+  83          
+  84          void dis_choose()
+  85          {
+  86   1        num[0]=dis_voltage%10;
+  87   1        num[1]=dis_voltage/10%10;
+  88   1        num[2]=dis_voltage/100%10;
+  89   1        num[3]=dis_voltage/1000%10;
+  90   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    375    ----
+   CONSTANT SIZE    =     14    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      6       7
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
